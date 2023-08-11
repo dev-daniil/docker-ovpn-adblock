@@ -10,10 +10,10 @@ cd /etc/openvpn
 
 if [ -n "${OVPN_DEBUG}" ]
   then
-    TCPSTATUS="/tmp/openvpn-status-443.log"
-    UDPSTATUS="/tmp/openvpn-status-1194.log"
-    TCPLOG="/tmp/tcp443.log"
-    UDPLOG="/tmp/udp1194.log"
+    TCPSTATUS="/tmp/openvpn-status-444.log"
+    UDPSTATUS="/tmp/openvpn-status-1195.log"
+    TCPLOG="/tmp/tcp444.log"
+    UDPLOG="/tmp/udp1195.log"
     VERBOSE="3"
   else
     TCPSTATUS="/dev/null"
@@ -23,20 +23,19 @@ if [ -n "${OVPN_DEBUG}" ]
     VERBOSE="0"
 fi
 
-cat >tcp443.conf <<EOF
-port 443
+cat >tcp444.conf <<EOF
+port 444
 proto tcp-server
-dev tun443
+dev tun444
 ca ca.crt
 cert site.crt
 key site.key
 dh site.dh
-server 10.43.95.0 255.255.255.0
+server 20.43.95.0 255.255.255.0
 push "persist-key"
 push "persist-tun"
 push "redirect-gateway def1"
 push "dhcp-option DNS $DNS_HOST1"
-push "dhcp-option DNS $DNS_HOST2"
 duplicate-cn
 keepalive 10 30
 tls-auth ta.key 0
@@ -49,7 +48,7 @@ group nogroup
 persist-key
 persist-tun
 status $TCPSTATUS
-plugin /usr/lib/openvpn/radiusplugin.so /etc/openvpn/radius443.conf
+plugin /usr/lib/openvpn/radiusplugin.so /etc/openvpn/radius444.conf
 username-as-common-name
 client-cert-not-required
 log $TCPLOG
@@ -58,13 +57,13 @@ verb $VERBOSE
 mute 10
 EOF
 
-cat >radius443.conf <<EOF
+cat >radius444.conf <<EOF
 NAS-Identifier=OpenVpn
 Service-Type=5
 Framed-Protocol=1
 NAS-Port-Type=5
 NAS-IP-Address=ovpn
-OpenVPNConfig=/etc/openvpn/tcp443.conf
+OpenVPNConfig=/etc/openvpn/tcp444.conf
 subnet=255.255.255.0
 overwriteccfiles=true
 nonfatalaccounting=true
@@ -79,20 +78,19 @@ server
 }
 EOF
 
-cat >udp1194.conf <<EOF
-port 1194
+cat >udp1195.conf <<EOF
+port 1195
 proto udp
-dev tun1194
+dev tun1195
 ca ca.crt
 key site.key
 cert site.crt
 dh site.dh
-server 10.43.94.0 255.255.255.0
+server 20.43.94.0 255.255.255.0
 push "persist-key"
 push "persist-tun"
 push "redirect-gateway def1"
 push "dhcp-option DNS $DNS_HOST1"
-push "dhcp-option DNS $DNS_HOST2"
 duplicate-cn
 keepalive 10 30
 tls-auth ta.key 0
@@ -106,7 +104,7 @@ group nogroup
 persist-key
 persist-tun
 status $UDPSTATUS
-plugin /usr/lib/openvpn/radiusplugin.so /etc/openvpn/radius1194.conf
+plugin /usr/lib/openvpn/radiusplugin.so /etc/openvpn/radius1195.conf
 username-as-common-name
 client-cert-not-required
 log $UDPLOG
@@ -116,13 +114,13 @@ mute 10
 explicit-exit-notify 1
 EOF
 
-cat >radius1194.conf <<EOF
+cat >radius1195.conf <<EOF
 NAS-Identifier=OpenVpn
 Service-Type=5
 Framed-Protocol=1
 NAS-Port-Type=5
 NAS-IP-Address=ovpn
-OpenVPNConfig=/etc/openvpn/udp1194.conf
+OpenVPNConfig=/etc/openvpn/udp1195.conf
 subnet=255.255.255.0
 overwriteccfiles=true
 nonfatalaccounting=true
@@ -137,15 +135,15 @@ server
 }
 EOF
 
-iptables -t nat -A POSTROUTING -s 10.43.94.0/23 -o eth0 -j MASQUERADE
+iptables -t nat -A POSTROUTING -s 20.43.94.0/23 -o eth0 -j MASQUERADE
 
 if [ -n "${OVPN_DEBUG}" ]
   then
     touch $TCPLOG $UDPLOG
-    while true ; do openvpn tcp443.conf ; done >> $TCPLOG &
-    while true ; do openvpn udp1194.conf ; done >> $UDPLOG &
+    while true ; do openvpn tcp444.conf ; done >> $TCPLOG &
+    while true ; do openvpn udp1195.conf ; done >> $UDPLOG &
     tail -f $TCPLOG $UDPLOG
   else
-    while true ; do openvpn tcp443.conf ; done &
-    while true ; do openvpn udp1194.conf ; done
+    while true ; do openvpn tcp444.conf ; done &
+    while true ; do openvpn udp1195.conf ; done
 fi
